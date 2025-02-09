@@ -32,5 +32,9 @@
 		"typescript": "^5.0.0",
 		"vite": "^6.0.0",
 		"vitest": "^3.0.0"
+	},
+	"dependencies": {
+		"livekit-client": "^2.8.1",
+		"livekit-server-sdk": "^2.9.7"
 	}
 }
