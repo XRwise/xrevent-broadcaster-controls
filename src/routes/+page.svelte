@@ -1,47 +1,79 @@
 <script lang="ts">
 	import '../app.css';
-	import RoomListItem from '\$lib/components/roomListItem.svelte';
+	import { ConnectionState, Room } from 'livekit-client';
 
-	type Room = {
-		name: string;
-		roomParticipants: number;
-		roomStreaming: boolean;
-		roomLocked: boolean;
+	import type { PageProps } from './$types';
+	import RoomList from '$lib/components/RoomList.svelte';
+	import RoomItem from '\$lib/components/roomItem.svelte';
+
+	let LIVEKIT_URL="wss://xrevent-broadcaster-kwyy7b3z.livekit.cloud"
+	let livekitToken: string | undefined = undefined;
+
+	let { data }: PageProps = $props();
+	let Rooms: Room[] | undefined = $state(undefined);
+	let selectedRoom: Room | undefined = $state(undefined);
+	console.log(data);
+	Rooms = JSON.parse(data.rooms);
+
+
+	async function getRooms(): Promise<string>{
+		const response = await fetch('/api/livekit-rooms',{
+			method: 'GET'
+		});
+		let x = await response.text();
+		console.log(JSON.parse(x));
+		return x;
 	}
-	let selectedRoom: undefined | Room = undefined;
-	let Rooms: Room[] = [
-		{
-			name: 'Room1 has a very long name and',
-			roomParticipants: 16,
-			roomStreaming: true,
-			roomLocked: false
-		},
-		{
-			name: 'Room2',
-			roomParticipants: 4,
-			roomStreaming: false,
-			roomLocked: false
-		}
-	];
 
-	function selectRoom(room: string): void {
-		selectedRoom = Rooms.find(r => r.name === room);
+	async function refreshRooms() {
+		Rooms = JSON.parse(await getRooms());
+	}
+	//ask the Sveltekit Server for a token
+	async function getViewerToken(name: string, room: string): Promise<string>{
+		const response = await fetch('/api/livekit-token?participantName=' + name + "&room=" + room, {
+			method: 'GET'
+		});
+		return await response.text();
+	}
+	function guidGenerator() {
+		const S4 = function() {
+			return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+		};
+		return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+	}
+
+	function connectToRoom(room: Room, roomName:string){
+		getViewerToken('Viewer-' + guidGenerator(),roomName).then(token => {
+			livekitToken = token;
+			room.connect(LIVEKIT_URL,token).then(() =>{
+					console.log("Connected to: " + room.name);
+					refreshRooms();
+				}
+			);
+			console.log(roomName + " | real Name: " + room.name);
+		});
+	}
+
+	function selectRoom(roomName: string = "null"): void {
+		if(selectedRoom?.state == ConnectionState.Connected) selectedRoom.disconnect();
+		selectedRoom = undefined;
+		if (roomName == "null") return;
+		/*if (Rooms != undefined){
+			selectedRoom = Rooms.find(r => r.name === roomName);
+		}*/
+		if (selectedRoom == undefined){
+			selectedRoom = new Room();
+		}
+		connectToRoom(selectedRoom,roomName);
 	}
 </script>
 
 
 <div class="gridContainer">
+	<RoomList {selectRoom} {refreshRooms} {Rooms} selectedRoom={selectedRoom?.name}/>
 	<div class="stroke">
-		{#each Rooms as room}
-			<RoomListItem {room} {selectRoom}/>
-		{/each}
-	</div>
-	<div class="stroke">
-		{#if selectedRoom}
-			<h1>{selectedRoom.name}</h1>
-			<p>Participants: {selectedRoom.roomParticipants}</p>
-			<p>Status: {selectedRoom.roomStreaming}</p>
-			<p>Locked: {selectedRoom.roomLocked}</p>
+		{#if selectedRoom !== undefined}
+			<RoomItem {selectRoom} {selectedRoom}/>
 		{:else}
 			<h1>No room selected</h1>
 		{/if}
