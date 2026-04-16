@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, Room, RoomEvent } from 'livekit-client';
+	import {
+		ConnectionState,
+		RemoteParticipant,
+		RemoteTrack,
+		RemoteTrackPublication,
+		Room,
+		RoomEvent,
+		Track
+	} from 'livekit-client';
 	import { onDestroy, onMount } from 'svelte';
 
 	let { selectedRoom, selectRoom }: { selectedRoom: Room | undefined; selectRoom: (roomName: string) => void } = $props();
@@ -9,9 +17,35 @@
 	let broadcasterEnabled: boolean = $state(false);
 	let Interval: number | null = null;
 	let roomToBroadcastTo: Room | undefined = undefined;
+	let screenEl: HTMLDivElement | undefined = $state(undefined);
 
 	let LIVEKIT_URL = 'wss://xrevent-broadcaster-kwyy7b3z.livekit.cloud';
 	let livekitBroadcasterToken: string | undefined = undefined;
+
+	function attachTrack(track: Track) {
+		if (!screenEl) return;
+		const el = track.attach();
+		el.setAttribute('data-lk-track', track.sid ?? '');
+		if (track.kind === Track.Kind.Video) {
+			el.setAttribute('playsinline', 'true');
+			el.setAttribute('autoplay', 'true');
+		}
+		screenEl.appendChild(el);
+	}
+
+	function detachTrack(track: Track) {
+		track.detach().forEach((el) => el.remove());
+	}
+
+	function attachAlreadySubscribedTracks(room: Room) {
+		room.remoteParticipants.forEach((participant) => {
+			participant.trackPublications.forEach((publication) => {
+				if (publication.isSubscribed && publication.track) {
+					attachTrack(publication.track);
+				}
+			});
+		});
+	}
 
 	async function getBroadcasterToken(name: string, room: string): Promise<string> {
 		const response = await fetch('/api/livekitBroadcasterToken?room=' + room, { method: 'GET' });
@@ -25,49 +59,69 @@
 			room?.on(RoomEvent.Connected, () => {
 				console.log('Connected <3');
 				if (room?.localParticipant?.permissions?.canPublish) {
-					console.log('Broadcasting deteted: Enabeling Audio and Video');
+					console.log('Broadcasting detected: enabling audio and video');
 					room?.localParticipant.setMicrophoneEnabled(true);
 					room?.localParticipant.setCameraEnabled(true).then((localTrack) => {
-						const element = localTrack?.videoTrack?.attach();
-						document.getElementById('screen')?.appendChild(element);
+						if (localTrack?.videoTrack) attachTrack(localTrack.videoTrack);
 					});
 				}
 			});
-			room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
-			function handleTrackSubscribed(
-				track: RemoteTrack,
-				publication: RemoteTrackPublication,
-				participant: RemoteParticipant
-			) {
-				console.log(publication.mimeType);
-				const element = track.attach();
-				document.getElementById('screen')?.appendChild(element);
-			}
 			room.connect(LIVEKIT_URL, token).then(() => {
 				console.log('Connected as Broadcaster to: ' + room.name);
-				console.log('State: ' + room.state);
 				selectedRoom = room;
 			});
 			console.log(roomName + ' | real Name: ' + room.name);
 		});
 	}
 
-	selectedRoom?.on(RoomEvent.ParticipantConnected || RoomEvent.ParticipantDisconnected, (participant) => {
-		console.log('participant Changed: ' + participant);
-	});
-	selectedRoom?.on(RoomEvent.Disconnected, (reason) => {
-		console.log(reason);
-	});
-	selectedRoom?.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
-	function handleTrackSubscribed(track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) {
-		console.log(publication.mimeType);
-		const element = track.attach();
-		document.getElementById('screen')?.appendChild(element);
-	}
+	// Re-run whenever the Room reference or the screen element changes.
+	// This is what guarantees subscription for a viewer joining an already-live room:
+	// we both register TrackSubscribed AND walk any tracks already subscribed on connect.
+	$effect(() => {
+		const room = selectedRoom;
+		if (!room || !screenEl) return;
 
-	selectedRoom?.on(RoomEvent.Connected, () => {
-		console.log('Connected <3 as Listener');
+		const onTrackSubscribed = (
+			track: RemoteTrack,
+			publication: RemoteTrackPublication,
+			_participant: RemoteParticipant
+		) => {
+			console.log('TrackSubscribed:', publication.mimeType);
+			attachTrack(track);
+		};
+		const onTrackUnsubscribed = (track: RemoteTrack) => detachTrack(track);
+		const onParticipantConnected = (p: RemoteParticipant) => console.log('participantConnected:', p.identity);
+		const onParticipantDisconnected = (p: RemoteParticipant) =>
+			console.log('participantDisconnected:', p.identity);
+		const onDisconnected = (reason: unknown) => console.log('disconnected:', reason);
+		const onConnected = () => {
+			console.log('Connected <3 as Listener');
+			attachAlreadySubscribedTracks(room);
+		};
+
+		room.on(RoomEvent.TrackSubscribed, onTrackSubscribed);
+		room.on(RoomEvent.TrackUnsubscribed, onTrackUnsubscribed);
+		room.on(RoomEvent.ParticipantConnected, onParticipantConnected);
+		room.on(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
+		room.on(RoomEvent.Disconnected, onDisconnected);
+		room.on(RoomEvent.Connected, onConnected);
+
+		// If the room is already connected by the time this effect runs,
+		// the Connected event won't fire again — sync up manually.
+		if (room.state === ConnectionState.Connected) {
+			attachAlreadySubscribedTracks(room);
+		}
+
+		return () => {
+			room.off(RoomEvent.TrackSubscribed, onTrackSubscribed);
+			room.off(RoomEvent.TrackUnsubscribed, onTrackUnsubscribed);
+			room.off(RoomEvent.ParticipantConnected, onParticipantConnected);
+			room.off(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
+			room.off(RoomEvent.Disconnected, onDisconnected);
+			room.off(RoomEvent.Connected, onConnected);
+		};
 	});
+
 	onDestroy(() => {
 		selectedRoom?.disconnect();
 		if (Interval != null) clearInterval(Interval);
@@ -105,7 +159,7 @@
 				<span class="eyebrow">{(selectedRoom?.numPublishers ?? 0) > 0 ? 'On Air' : 'Off Air'}</span>
 			</span>
 		</header>
-		<div id="screen" class="screen">
+		<div bind:this={screenEl} class="screen">
 			<span class="screen__placeholder eyebrow">No video signal</span>
 		</div>
 	</section>
