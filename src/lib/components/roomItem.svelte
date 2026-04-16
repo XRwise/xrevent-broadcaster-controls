@@ -101,6 +101,14 @@
 		connectToRoomAsBroadcaster(selectedRoom,selectedRoom.name);
 	}
 
+	async function createRTMPLink(room: string): Promise<string> {
+		const response = await fetch('/api/livekit-ingest-token?room=' + room, {
+			method: 'GET'
+		});
+		console.log(await response.json());
+		return response.text();
+	}
+
 </script>
 
 
@@ -121,6 +129,7 @@
 		{#if !broadcasterEnabled}
 		<div style="grid-column: 1/3; grid-row: 1/4; background-color: #444444c3; width: 100%; height: 100%;display: grid;justify-items: center;align-items: center">
 			<button onclick={becomeBroadcaster}>Become Broadcaster</button>
+			<button onclick={createRTMPLink(selectedRoom.name)}>Get RTMP</button>
 		</div>
 		{/if}
 	</div>
