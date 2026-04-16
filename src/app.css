@@ -1,1 +1,302 @@
 @import 'tailwindcss';
+
+/* ============================================================
+   Design tokens — single source of truth for the look & feel.
+   Change a value here and every component updates consistently.
+   ============================================================ */
+:root {
+	--bg: #000;
+	--bg-elevated: #0d0d0d;
+	--bg-hover: #1a1a1a;
+	--bg-active: #262626;
+	--bg-overlay: rgba(0, 0, 0, 0.72);
+
+	--fg: #fff;
+	--fg-muted: #999;
+	--fg-subtle: #5a5a5a;
+
+	--border: #fff;
+	--border-muted: #333;
+
+	--accent-live: #ff3b30;
+	--accent-ok: #30d97c;
+
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+
+	--border-w: 1px;
+	--radius: 0; /* sharp corners by design */
+
+	--font-mono:
+		ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, Consolas,
+		monospace;
+	--font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+	--t-fast: 120ms ease;
+}
+
+/* ============================================================
+   Base reset — keep minimal, defer to component layout.
+   ============================================================ */
+html,
+body {
+	margin: 0;
+	min-height: 100vh;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--font-ui);
+	font-size: 15px;
+	line-height: 1.45;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+	margin: 0;
+}
+h1,
+h2,
+h3 {
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+
+button,
+input {
+	font: inherit;
+	color: inherit;
+}
+button {
+	cursor: pointer;
+	background: transparent;
+	border: 0;
+	padding: 0;
+}
+
+*:focus {
+	outline: none;
+}
+*:focus-visible {
+	outline: 2px solid var(--accent-live);
+	outline-offset: 2px;
+}
+
+/* ============================================================
+   .panel — the one and only "bordered card" primitive.
+   Replaces every ad-hoc .stroke class across components.
+   ============================================================ */
+.panel {
+	border: var(--border-w) solid var(--border);
+	background: var(--bg);
+}
+.panel--muted {
+	border-color: var(--border-muted);
+	background: var(--bg-elevated);
+}
+.panel--pad {
+	padding: var(--space-4);
+}
+
+.panel__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--space-3) var(--space-4);
+	border-bottom: var(--border-w) solid var(--border-muted);
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
+}
+.panel__body {
+	padding: var(--space-4);
+}
+
+/* ============================================================
+   .btn — one button API, variants via modifier classes.
+   Default is "ghost": transparent with a white border that
+   inverts on hover. Matches the panel aesthetic.
+   ============================================================ */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-4);
+	min-height: 2.25rem;
+	border: var(--border-w) solid var(--border);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--fg);
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	transition:
+		background var(--t-fast),
+		color var(--t-fast),
+		border-color var(--t-fast);
+}
+.btn:hover {
+	background: var(--fg);
+	color: var(--bg);
+}
+.btn:active {
+	background: var(--bg-active);
+	color: var(--fg);
+}
+.btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	background: transparent;
+	color: var(--fg);
+}
+
+.btn--primary {
+	background: var(--fg);
+	color: var(--bg);
+}
+.btn--primary:hover {
+	background: transparent;
+	color: var(--fg);
+}
+
+.btn--danger {
+	border-color: var(--accent-live);
+	color: var(--accent-live);
+}
+.btn--danger:hover {
+	background: var(--accent-live);
+	color: var(--bg);
+}
+
+.btn--ghost {
+	border-color: var(--border-muted);
+	color: var(--fg-muted);
+}
+.btn--ghost:hover {
+	border-color: var(--border);
+	color: var(--fg);
+	background: transparent;
+}
+
+.btn--block {
+	width: 100%;
+}
+.btn--lg {
+	min-height: 3rem;
+	padding: var(--space-3) var(--space-6);
+	font-size: 0.875rem;
+}
+.btn--icon {
+	min-width: 2.25rem;
+	aspect-ratio: 1 / 1;
+	padding: var(--space-2);
+}
+
+/* ============================================================
+   .input — understated underline input, no surrounding box.
+   ============================================================ */
+.input {
+	width: 100%;
+	padding: var(--space-2) 0;
+	background: transparent;
+	border: 0;
+	border-bottom: var(--border-w) solid var(--border-muted);
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
+	outline: none;
+	transition: border-color var(--t-fast);
+}
+.input:focus {
+	border-bottom-color: var(--border);
+}
+.input::placeholder {
+	color: var(--fg-subtle);
+}
+
+/* ============================================================
+   .badge + .indicator-dot — small status affordances.
+   ============================================================ */
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: 2px var(--space-2);
+	border: var(--border-w) solid var(--border-muted);
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
+}
+.badge--live {
+	border-color: var(--accent-live);
+	color: var(--accent-live);
+}
+.badge--ok {
+	border-color: var(--accent-ok);
+	color: var(--accent-ok);
+}
+
+.indicator-dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--fg-subtle);
+	flex-shrink: 0;
+}
+.indicator-dot--live {
+	background: var(--accent-live);
+	box-shadow: 0 0 0.5rem var(--accent-live);
+	animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
+/* ============================================================
+   Typography helpers.
+   ============================================================ */
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
+}
+.mono {
+	font-family: var(--font-mono);
+}
+
+/* ============================================================
+   Layout helpers — tiny flex utilities used across components.
+   ============================================================ */
+.hstack {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+}
+.vstack {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+}
+.grow {
+	flex: 1 1 auto;
+}

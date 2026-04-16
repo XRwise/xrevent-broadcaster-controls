@@ -3,23 +3,48 @@
 	let { children } = $props();
 </script>
 
-<div class="headerBar">
-	<div class="titel">
-	<h1>XRevent Broadcaster controls</h1>
+<header class="appHeader">
+	<div class="appHeader__mark">
+		<span class="appHeader__dot"></span>
+		<span class="appHeader__title">XREVENT</span>
+		<span class="appHeader__sub">Broadcaster Controls</span>
 	</div>
-</div>
+	<span class="eyebrow">v1</span>
+</header>
 
 {@render children()}
 
 <style>
-	.headerBar {
-		color: white;
-		padding: 0em 1em;
-		text-align: left;
+	.appHeader {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.75rem 1.25rem;
+		border-bottom: 1px solid var(--border);
+		background: var(--bg);
 	}
-	.titel {
-			font-family: "Droid Sans Mono", monospace;
-			font-size: 3em;
-			font-weight: bold;
+	.appHeader__mark {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+	}
+	.appHeader__dot {
+		width: 0.55rem;
+		height: 0.55rem;
+		background: var(--fg);
+		align-self: center;
+	}
+	.appHeader__title {
+		font-family: var(--font-mono);
+		font-size: 1.25rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+	}
+	.appHeader__sub {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--fg-muted);
 	}
 </style>
