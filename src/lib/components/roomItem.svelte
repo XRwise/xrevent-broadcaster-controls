@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	let {selectedRoom, selectRoom}:{selectedRoom:Room|undefined, selectRoom:(roomName: string)=>void} = $props();
-	let state: string = $state("Viewer");
+	let role: string = $state("Viewer");
 	let broadcastState: string = $state("Not live");
 	let broadcasterAvailable: boolean = $state(false);
 	let broadcasterEnabled: boolean = $state(false);
@@ -117,7 +117,7 @@
 	<div class="stroke participantList" >Participants</div>
 	<div class="stroke controls" >
 			<p>You are a:</p>
-			<h2>{state}</h2>
+			<h2>{role}</h2>
 			<button onclick={()=>{selectedRoom?.disconnect();selectRoom("null");}}>Leave Room</button>
 	</div>
 	<div class="stroke broadcasterControls">
