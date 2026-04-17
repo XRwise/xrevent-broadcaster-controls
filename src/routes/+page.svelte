@@ -67,7 +67,7 @@
 
 	<section class="workspace__stage panel">
 		{#if selectedRoom !== undefined}
-			<RoomItem {selectRoom} {selectedRoom} />
+			<RoomItem {selectRoom} bind:selectedRoom />
 		{:else}
 			<div class="emptyState">
 				<span class="eyebrow">No room selected</span>

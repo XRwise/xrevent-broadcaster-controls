@@ -247,6 +247,15 @@ button {
 	border-color: var(--accent-ok);
 	color: var(--accent-ok);
 }
+.badge--pending {
+	border-color: var(--fg-muted);
+	color: var(--fg);
+	animation: badge-pulse 1.2s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
+}
 
 .indicator-dot {
 	width: 0.5rem;
