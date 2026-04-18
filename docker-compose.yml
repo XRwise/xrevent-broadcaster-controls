@@ -1,0 +1,12 @@
+services:
+  broadcaster-controls:
+    build: .
+    container_name: broadcaster-controls
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

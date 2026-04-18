@@ -1,0 +1,8 @@
+services:
+  broadcaster-controls:
+    container_name: broadcaster-controls
+    image: ghcr.io/xrwise/xrevent-broadcaster-controls:latest
+    ports:
+      - 4173:4173
+    restart: unless-stopped
+    env_file: .env

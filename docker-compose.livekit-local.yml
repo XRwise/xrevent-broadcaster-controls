@@ -1,0 +1,36 @@
+# Local LiveKit server for development — no cloud account needed.
+#
+# Usage:
+#   docker compose -f docker-compose.livekit-local.yml up -d
+#   docker compose -f docker-compose.livekit-local.yml down
+#
+# Or use: npm run dev:local  (starts this container then Vite in one command)
+#
+# The --dev flag sets hardcoded credentials:
+#   API key:    devkey
+#   API secret: secret
+#   URL:        ws://localhost:7880  (ws://, NOT wss://)
+#
+# Ports (via network_mode: host on Linux):
+#   7880 — HTTP / WebSocket
+#   7881 — TCP (WebRTC)
+#   7882 — UDP (WebRTC media)
+#
+# NOTE: network_mode: host is Linux-only. On macOS/Windows Docker Desktop,
+# replace with explicit port mappings and add --node-ip=host.docker.internal:
+#
+#   ports:
+#     - "7880:7880"
+#     - "7881:7881"
+#     - "7882:7882/udp"
+#   command: --dev --bind 0.0.0.0 --node-ip=host.docker.internal
+#
+# LIMITATION: The /api/livekit-ingest-token route requires a separate
+# livekit-ingress daemon and will NOT work with this setup. All other
+# API routes (rooms, viewer token, broadcaster token) work normally.
+
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --dev --bind 0.0.0.0
+    network_mode: host
