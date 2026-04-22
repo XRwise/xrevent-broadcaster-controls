@@ -253,8 +253,13 @@ button {
 	animation: badge-pulse 1.2s ease-in-out infinite;
 }
 @keyframes badge-pulse {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.5; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
 }
 
 .indicator-dot {
@@ -308,4 +313,85 @@ button {
 }
 .grow {
 	flex: 1 1 auto;
+}
+
+/* ============================================================
+   .legalPage — prose layout for Impressum / Datenschutzerklärung.
+   Scrolls naturally; does not inherit the main workspace's
+   full-viewport grid.
+   ============================================================ */
+.legalPage {
+	display: block;
+	max-width: 42rem;
+	margin: 0 auto;
+	padding: var(--space-8) var(--space-6);
+}
+.legalPage__back {
+	display: inline-block;
+	margin-bottom: var(--space-6);
+	text-decoration: none;
+}
+.legalPage__back:hover {
+	color: var(--fg);
+}
+.legalPage h1 {
+	font-family: var(--font-mono);
+	font-size: 1.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin-bottom: var(--space-8);
+}
+.legalPage h2 {
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg);
+	margin-top: var(--space-8);
+	margin-bottom: var(--space-3);
+	padding-bottom: var(--space-2);
+	border-bottom: var(--border-w) solid var(--border-muted);
+}
+.legalPage h3 {
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-muted);
+	margin-top: var(--space-6);
+	margin-bottom: var(--space-2);
+}
+.legalPage p {
+	margin-bottom: var(--space-4);
+}
+.legalPage ul {
+	padding-left: var(--space-6);
+	margin-bottom: var(--space-4);
+}
+.legalPage li {
+	margin-bottom: var(--space-2);
+}
+.legalPage a {
+	color: var(--fg);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	transition: color var(--t-fast);
+}
+.legalPage a:hover {
+	color: var(--fg-muted);
+}
+.legalPage address {
+	font-style: normal;
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.placeholder {
+	background: transparent;
+	color: var(--accent-live);
+	border-bottom: 1px dashed var(--accent-live);
+	padding: 0 2px;
+	font-family: var(--font-mono);
+	font-size: 0.9em;
 }

@@ -1,15 +1,28 @@
 <script lang="ts">
 	import '../app.css';
+	import { page } from '$app/state';
 	let { children } = $props();
 </script>
 
 <header class="appHeader">
-	<div class="appHeader__mark">
+	<a href="/" class="appHeader__mark">
 		<span class="appHeader__dot"></span>
 		<span class="appHeader__title">XREVENT</span>
 		<span class="appHeader__sub">Broadcaster Controls</span>
-	</div>
-	<span class="eyebrow">v1</span>
+	</a>
+	<nav class="appHeader__meta" aria-label="Rechtliches">
+		<a
+			href="/impressum"
+			class="eyebrow appHeader__link"
+			aria-current={page.url.pathname === '/impressum' ? 'page' : undefined}>Impressum</a
+		>
+		<a
+			href="/datenschutz"
+			class="eyebrow appHeader__link"
+			aria-current={page.url.pathname === '/datenschutz' ? 'page' : undefined}>Datenschutz</a
+		>
+		<span class="eyebrow">v1</span>
+	</nav>
 </header>
 
 {@render children()}
@@ -27,6 +40,8 @@
 		display: flex;
 		align-items: baseline;
 		gap: 0.6rem;
+		text-decoration: none;
+		color: inherit;
 	}
 	.appHeader__dot {
 		width: 0.55rem;
@@ -46,5 +61,26 @@
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		color: var(--fg-muted);
+	}
+	.appHeader__meta {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+	.appHeader__link {
+		text-decoration: none;
+		border-bottom: 1px solid transparent;
+		padding-bottom: 1px;
+		transition:
+			color 120ms ease,
+			border-color 120ms ease;
+	}
+	.appHeader__link:hover {
+		color: var(--fg);
+		border-bottom-color: var(--border-muted);
+	}
+	.appHeader__link[aria-current='page'] {
+		color: var(--fg);
+		border-bottom-color: var(--border);
 	}
 </style>
